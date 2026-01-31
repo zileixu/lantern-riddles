@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灯谜</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.5s ease;
+        }
+        
+        .page1 {
+            /* 这里需要根据你的OSS配置修改为正确的URL */
+            background: url('hhttps://codingparty-riddle.oss-cn-beijing.aliyuncs.com/img/img/page1.png') center/cover no-repeat;
+        }
+        
+        /* 手机端首图 */
+        @media only screen and (max-width: 768px) {
+            .page1 {
+                /* 这里需要根据你的OSS配置修改为正确的URL */
+                background: url('https://codingparty-riddle.oss-cn-beijing.aliyuncs.com/img/img/m-page1.png') center/cover no-repeat;
+            }
+        }
+        
+        .riddle-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+        
+        .riddle-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s ease;
+        }
+        
+        .riddle-number {
+            font-size: 6vw;
+            margin-bottom: 30px;
+            font-family: 'STKaiti', 'KaiTi', '楷体', 'Microsoft YaHei', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            font-weight: bold;
+            color: #ffd700; /* 金色，更醒目 */
+        }
+        
+        .riddle-question {
+            font-size: 4vw;
+            margin-bottom: 20px;
+            max-width: 80%;
+            font-family: 'STKaiti', 'KaiTi', '楷体', 'Microsoft YaHei', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.5;
+            min-font-size: 16px;
+            max-font-size: 36px;
+        }
+        
+        .riddle-answer {
+            font-size: 3.5vw;
+            max-width: 80%;
+            font-family: 'STKaiti', 'KaiTi', '楷体', 'Microsoft YaHei', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.5;
+            min-font-size: 14px;
+            max-font-size: 28px;
+        }
+        
+        .riddle-hint {
+            font-size: 3.5vw;
+            margin-bottom: 30px;
+            max-width: 80%;
+            font-family: 'STKaiti', 'KaiTi', '楷体', 'Microsoft YaHei', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.5;
+            min-font-size: 14px;
+            max-font-size: 28px;
+            color: #ffd700; /* 金色，更醒目 */
+        }
+        
+        @media (max-width: 768px) {
+            .riddle-hint {
+                font-size: 4.5vw;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .riddle-hint {
+                font-size: 28px;
+            }
+        }
+        
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 2.5vw;
+            opacity: 0.8;
+            min-font-size: 12px;
+            max-font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .riddle-number {
+                font-size: 8vw;
+            }
+            
+            .riddle-question {
+                font-size: 5vw;
+            }
+            
+            .riddle-answer {
+                font-size: 4.5vw;
+            }
+            
+            .hint {
+                font-size: 3vw;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .riddle-number {
+                font-size: 54px;
+            }
+            
+            .riddle-question {
+                font-size: 36px;
+            }
+            
+            .riddle-answer {
+                font-size: 28px;
+            }
+            
+            .hint {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page page1"></div>
+        <div class="page riddle-page" style="display: none;">
+            <div class="riddle-container">
+                <div class="riddle-content">
+                    <div class="riddle-number"></div>
+                    <div class="riddle-question"></div>
+                    <div class="riddle-answer" style="display: none;"></div>
+                    <div class="riddle-hint" style="display: none;"></div>
+                    <div class="riddle-qrcode" style="display: none;">
+                        <img src="https://codingparty-riddle.oss-cn-beijing.aliyuncs.com/img/img/qrcode.jpg" alt="公众号二维码" style="width: 200px; height: 200px; margin: 20px 0;">
+                        <p>关注公众号查看更多答案</p>
+                    </div>
+                </div>
+                <div class="hint">上下滑动切换灯谜 | 向左滑动查看答案 | 向右滑动查看提示</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 数据
+        let riddles = [];
+        let bgImages = [];
+        let currentRiddleIndex = -1;
+        let isShowingAnswer = false;
+        let isShowingHint = false;
+        let startY = 0;
+        let startX = 0;
+        let currentPage = 1;
+        let answerViewCount = 0; // 答案查看次数计数器
+        const MAX_ANSWER_VIEWS = 2; // 最大答案查看次数
+        
+        // 初始化
+        async function init() {
+            // 加载灯谜数据
+            try {
+                console.log('开始加载灯谜数据...');
+                console.log('当前页面URL:', window.location.href);
+                const dataUrl = 'https://codingparty-riddle.oss-cn-beijing.aliyuncs.com/data/data.json';
+                console.log('尝试加载:', dataUrl);
+                
+                // 方法1: 使用fetch - 从dataUrl获取JSON文本文件并转化为JSON
+                try {
+                    console.log('使用fetch从dataUrl获取JSON文本文件:', dataUrl);
+                    
+                    const response = await fetch(dataUrl);
+                    console.log('文件获取完成，响应状态:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    console.log('开始读取文件文本...');
+                    const text = await response.text();
+                    console.log('文件文本读取完成，长度:', text.length);
+                    
+                    // 检查文本是否为空
+                    if (!text || text.trim() === '') {
+                        throw new Error('获取到的文件文本为空');
+                    }
+                    
+                    console.log('获取到的原始数据:', text);
+                    
+                    console.log('开始解析JSON...');
+                    try {
+                        riddles = JSON.parse(text);
+                        
+                        // 检查解析结果是否为数组
+                        if (!Array.isArray(riddles)) {
+                            throw new Error('解析结果不是数组格式');
+                        }
+                        
+                        console.log('JSON解析成功，灯谜数量:', riddles.length);
+                        console.log('灯谜数据加载成功 (fetch):', riddles);
+                    } catch (parseError) {
+                        throw new Error('JSON解析失败: ' + parseError.message);
+                    }
+                } catch (fetchError) {
+                    console.error('从dataUrl获取JSON失败:', fetchError);
+                    console.error('错误详情:', fetchError.message);
+                    console.error('错误堆栈:', fetchError.stack);
+                }
+            } catch (error) {
+                console.error('加载灯谜数据失败:', error);
+                // 最终备用数据
+                riddles = [
+                    { "i": 1, "q": "默认灯谜：你有一个灯，它可以亮也可以暗。你可以用它来做什么？", "a": "默认答案：你可以用它来照明。" }
+                ];
+                console.log('使用默认灯谜数据');
+            }
+            
+            // 检测设备类型
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            console.log('设备类型检测:', isMobile ? '手机' : 'PC');
+            
+            // 阿里云OSS配置
+            const ossConfig = {
+                bucket: 'codingparty-riddle',
+                region: 'oss-cn-beijing.aliyuncs.com',
+                imgPrefix: isMobile ? 'm-bg' : 'bg',
+                imgCount: 9 // 假设OSS中有9张背景图片
+            };
+            
+            // 构建OSS图片URL
+            const getOssImageUrl = (index) => {
+                // 这里需要根据你的OSS配置构建正确的URL
+                // 示例格式：https://bucket.region.aliyuncs.com/path/to/image.png
+                return `https://${ossConfig.bucket}.${ossConfig.region}/img/img/${ossConfig.imgPrefix}${index}.png`;
+            };
+            
+            // 动态加载背景图片
+            bgImages = [];
+            let i = 1;
+            
+            const loadImage = async () => {
+                try {
+                    // 尝试加载图片
+                    const img = new Image();
+                    img.src = getOssImageUrl(i);
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                    });
+                    // 加载成功，添加到数组
+                    bgImages.push(getOssImageUrl(i));
+                    console.log(`加载背景图片成功: ${getOssImageUrl(i)}`);
+                    i++;
+                    // 继续尝试加载下一张
+                    if (i <= ossConfig.imgCount) {
+                        await loadImage();
+                    } else {
+                        console.log(`已加载 ${bgImages.length} 张背景图片`);
+                    }
+                } catch (error) {
+                    // 加载失败，停止尝试
+                    console.log(`已加载 ${bgImages.length} 张背景图片`);
+                }
+            };
+            
+            // 开始加载
+            await loadImage();
+            
+            // 如果没有加载到背景图片，使用默认图片
+            if (bgImages.length === 0) {
+                const defaultUrl = getOssImageUrl(1);
+                bgImages = [defaultUrl];
+                console.log(`使用默认背景图片: ${defaultUrl}`);
+            }
+            
+            // 绑定事件
+            bindEvents();
+            console.log('初始化完成');
+        }
+        
+        // 绑定事件
+        function bindEvents() {
+            document.addEventListener('touchstart', handleTouchStart);
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleTouchEnd);
+            
+            // 鼠标事件（PC兼容）
+            document.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+        
+        // 触摸开始
+        function handleTouchStart(e) {
+            startY = e.touches[0].clientY;
+            startX = e.touches[0].clientX;
+        }
+        
+        // 触摸移动
+        function handleTouchMove(e) {
+            e.preventDefault();
+        }
+        
+        // 触摸结束
+        function handleTouchEnd(e) {
+            const endY = e.changedTouches[0].clientY;
+            const endX = e.changedTouches[0].clientX;
+            const diffY = startY - endY;
+            const diffX = startX - endX;
+            
+            // 上下滑动
+            if (Math.abs(diffY) > Math.abs(diffX)) {
+                if (Math.abs(diffY) > 50) {
+                    if (currentPage === 1) {
+                        // 从首页进入灯谜页
+                        showRiddlePage();
+                        currentPage = 2;
+                    } else {
+                        // 切换灯谜
+                        showNextRiddle(diffY > 0);
+                    }
+                }
+            } else {
+                // 左右滑动
+                if (Math.abs(diffX) > 50) {
+                    toggleAnswer(diffX > 0);
+                }
+            }
+        }
+        
+        // 鼠标按下
+        function handleMouseDown(e) {
+            startY = e.clientY;
+            startX = e.clientX;
+        }
+        
+        // 鼠标移动
+        function handleMouseMove(e) {
+            e.preventDefault();
+        }
+        
+        // 鼠标释放
+        function handleMouseUp(e) {
+            const endY = e.clientY;
+            const endX = e.clientX;
+            const diffY = startY - endY;
+            const diffX = startX - endX;
+            
+            // 上下滑动
+            if (Math.abs(diffY) > Math.abs(diffX)) {
+                if (Math.abs(diffY) > 100) {
+                    if (currentPage === 1) {
+                        // 从首页进入灯谜页
+                        showRiddlePage();
+                        currentPage = 2;
+                    } else {
+                        // 切换灯谜
+                        showNextRiddle(diffY > 0);
+                    }
+                }
+            } else {
+                // 左右滑动
+                if (Math.abs(diffX) > 100) {
+                    toggleAnswer(diffX > 0);
+                }
+            }
+        }
+        
+        // 显示灯谜页
+        function showRiddlePage() {
+            const page1 = document.querySelector('.page1');
+            const riddlePage = document.querySelector('.riddle-page');
+            
+            page1.style.display = 'none';
+            riddlePage.style.display = 'block';
+            
+            // 显示第一个灯谜
+            showNextRiddle(true);
+        }
+        
+        // 显示下一个灯谜
+        function showNextRiddle(isUp) {
+            // 随机选择灯谜
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * riddles.length);
+            } while (newIndex === currentRiddleIndex && riddles.length > 1);
+            currentRiddleIndex = newIndex;
+            
+            // 随机选择背景图片
+            const bgIndex = Math.floor(Math.random() * bgImages.length);
+            const bgImage = bgImages[bgIndex];
+            
+            // 更新背景图
+            const riddleContainer = document.querySelector('.riddle-container');
+            riddleContainer.style.backgroundImage = `url('${bgImage}')`;
+            
+            // 更新灯谜内容
+            const riddleNumber = document.querySelector('.riddle-number');
+            const riddleQuestion = document.querySelector('.riddle-question');
+            const riddleAnswer = document.querySelector('.riddle-answer');
+            const riddleHint = document.querySelector('.riddle-hint');
+            const riddleQrcode = document.querySelector('.riddle-qrcode');
+            
+            // 更新编号
+            riddleNumber.textContent = ` ${riddles[currentRiddleIndex].i} `;
+            
+            // 更新问题、答案和提示
+            riddleQuestion.textContent = riddles[currentRiddleIndex].q;
+            riddleAnswer.textContent = riddles[currentRiddleIndex].a;
+            riddleHint.textContent = riddles[currentRiddleIndex].t || '无提示';
+            
+            // 重置显示状态
+            isShowingAnswer = false;
+            isShowingHint = false;
+            riddleNumber.style.display = 'block';
+            riddleQuestion.style.display = 'block';
+            riddleAnswer.style.display = 'none';
+            riddleHint.style.display = 'none';
+            
+            // 重置内容位置
+            const riddleContent = document.querySelector('.riddle-content');
+            riddleContent.style.transform = 'translateX(0)';
+        }
+        
+        // 切换显示内容
+        function toggleAnswer(isLeft) {
+            const riddleContent = document.querySelector('.riddle-content');
+            const riddleNumber = document.querySelector('.riddle-number');
+            const riddleQuestion = document.querySelector('.riddle-question');
+            const riddleAnswer = document.querySelector('.riddle-answer');
+            const riddleHint = document.querySelector('.riddle-hint');
+            const riddleQrcode = document.querySelector('.riddle-qrcode');
+            
+            // 检查当前是否已经显示答案或提示
+            if (isShowingAnswer || isShowingHint) {
+                // 从答案或提示返回到问题页面
+                riddleContent.style.transform = isLeft ? 'translateX(100%)' : 'translateX(-100%)';
+                setTimeout(() => {
+                    // 重置所有显示状态
+                    riddleNumber.style.display = 'block';
+                    riddleQuestion.style.display = 'block';
+                    riddleAnswer.style.display = 'none';
+                    riddleHint.style.display = 'none';
+                    riddleQrcode.style.display = 'none';
+                    riddleContent.style.transform = 'translateX(0)';
+                }, 300);
+                isShowingAnswer = false;
+                isShowingHint = false;
+            } else {
+                // 从问题页面切换到答案或提示
+                if (isLeft) {
+                    // 向左滑动 - 显示答案，保持原有逻辑
+                    if (answerViewCount >= MAX_ANSWER_VIEWS) {
+                        // 显示二维码
+                        riddleContent.style.transform = 'translateX(-100%)';
+                        setTimeout(() => {
+                            riddleNumber.style.display = 'none';
+                            riddleQuestion.style.display = 'none';
+                            riddleAnswer.style.display = 'none';
+                            riddleHint.style.display = 'none';
+                            riddleQrcode.style.display = 'block';
+                            riddleContent.style.transform = 'translateX(0)';
+                        }, 300);
+                    } else {
+                        // 显示答案
+                        answerViewCount++;
+                        console.log(`答案查看次数: ${answerViewCount}/${MAX_ANSWER_VIEWS}`);
+                        
+                        riddleContent.style.transform = 'translateX(-100%)';
+                        setTimeout(() => {
+                            riddleNumber.style.display = 'none';
+                            riddleQuestion.style.display = 'none';
+                            riddleAnswer.style.display = 'block';
+                            riddleHint.style.display = 'none';
+                            riddleQrcode.style.display = 'none';
+                            riddleContent.style.transform = 'translateX(0)';
+                        }, 300);
+                    }
+                    isShowingAnswer = true;
+                    isShowingHint = false;
+                } else {
+                    // 向右滑动 - 显示提示词
+                    riddleContent.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        riddleNumber.style.display = 'none';
+                        riddleQuestion.style.display = 'none';
+                        riddleAnswer.style.display = 'none';
+                        riddleHint.style.display = 'block';
+                        riddleQrcode.style.display = 'none';
+                        riddleContent.style.transform = 'translateX(0)';
+                    }, 300);
+                    isShowingHint = true;
+                    isShowingAnswer = false;
+                }
+            }
+        }
+        
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
